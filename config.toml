@@ -1,0 +1,8 @@
+[YouTube]
+enabled = true
+build-mode = "apk"                   # 'apk'
+excluded-patches = "debugging"       # space-seperated patches to exclude (multiline strings are not supported)
+included-patches = ""                # space-seperated patches to include (non-excluded patches are included by default)
+version = "auto"                     # 'auto', 'latest', 'beta' or a custom one like '18.11.35'
+exclusive-patches = false            # excludes all patches by default
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"

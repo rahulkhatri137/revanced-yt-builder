@@ -1,0 +1,67 @@
+name: Build ReVanced
+on: workflow_dispatch
+
+jobs:
+  run:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Get last tag
+        id: last_tag
+        uses: oprypin/find-latest-tag@v1
+        continue-on-error: true
+        with:
+          token: ${{ secrets.TOKEN }}
+          repository: ${{ github.repository }}
+          releases-only: true
+
+      - name: Get next version code
+        id: next_ver_code
+        run: |
+          TAG="${{ steps.last_tag.outputs.tag }}"
+          if [ -z "$TAG" ]; then TAG=0; fi
+          echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
+
+      - name: Build APK
+        run: ./build.sh config.toml
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: $GITHUB_REPOSITORY
+          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+
+      - name: Get output
+        id: get_output
+        run: |
+          DELIM="$(openssl rand -hex 8)"
+          echo "BUILD_LOG<<${DELIM}" >> "$GITHUB_OUTPUT"
+          cat build.md >> "$GITHUB_OUTPUT"
+          echo "${DELIM}" >> "$GITHUB_OUTPUT"
+          cp -f build.md build.tmp
+          yt_op=$(find build -maxdepth 1 -name "*youtube*" -printf '%P\n')
+          if [ -z "$yt_op" ]; then
+            echo "RELEASE_NAME=ReVanced" >> $GITHUB_OUTPUT
+          else
+            echo "RELEASE_NAME=$yt_op" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          body: ${{ steps.get_output.outputs.BUILD_LOG }}
+          repo_token: ${{ secrets.TOKEN }}
+          file: ./build/*
+          release_name: ${{ steps.get_output.outputs.RELEASE_NAME }}
+          tag: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          file_glob: true
+          overwrite: true
