@@ -18,7 +18,7 @@ mkdir -p "$BUILD_DIR" "$PREBUILTS_DIR"
 if [ "${NOSET:-}" = true ]; then set_prebuilts; else get_prebuilts || set_prebuilts; fi
 jq --version >/dev/null || abort "\`jq\` is not installed. install it with 'apt install jq' or equivalent"
 
-log "**App Versions:**"
+log "### **App Versions:**"
 for table_name in $(toml_get_table_names); do
 	if [ -z "$table_name" ]; then continue; fi
 	t=$(toml_get_table "$table_name")

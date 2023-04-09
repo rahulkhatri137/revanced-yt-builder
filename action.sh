@@ -41,12 +41,12 @@ get_prebuilts() {
 	local rv_cli_url rv_integrations_url rv_patches rv_patches_changelog rv_patches_dl rv_patches_url rv_integrations_rel rv_patches_rel
 	rv_cli_url=$(gh_req "https://api.github.com/repos/inotia00/revanced-cli/releases/latest" - | json_get 'browser_download_url') || return 1
 	RV_CLI_JAR="${PREBUILTS_DIR}/${rv_cli_url##*/}"
-	log "CLI: ${rv_cli_url##*/}"
+	log "**CLI**: _${rv_cli_url##*/}_"
         rv_integrations_rel="https://api.github.com/repos/inotia00/revanced-integrations/releases/latest"
 	rv_patches_rel="https://api.github.com/repos/inotia00/revanced-patches/releases/latest"
 	rv_integrations_url=$(gh_req "$rv_integrations_rel" - | json_get 'browser_download_url')
 	RV_INTEGRATIONS_APK="${PREBUILTS_DIR}/${rv_integrations_url##*/}"
-	log "Integrations: ${rv_integrations_url##*/}"
+	log "**Integrations**: _${rv_integrations_url##*/}_"
 
 	rv_patches=$(gh_req "$rv_patches_rel" -)
 	rv_patches_changelog=$(json_get 'body' <<<"$rv_patches" | sed 's/\(\\n\)\+/\\n/g')
@@ -55,8 +55,8 @@ get_prebuilts() {
 	rv_patches_url=$(grep 'jar' <<<"$rv_patches_dl")
 	RV_PATCHES_JAR="${PREBUILTS_DIR}/${rv_patches_url##*/}"
 	[ -f "$RV_PATCHES_JAR" ] || REBUILD=true
-	log "Patches: ${rv_patches_url##*/}"
-	log "\n${rv_patches_changelog//# [/### [}\n"
+	log "**Patches**: _${rv_patches_url##*/}_\n"
+        log "**Changelog**: [Here](https://github.com/inotia00/revanced-patches/releases/)\n"
 
 	dl_if_dne "$RV_CLI_JAR" "$rv_cli_url"
 	dl_if_dne "$RV_INTEGRATIONS_APK" "$rv_integrations_url"
@@ -249,11 +249,7 @@ build_rv() {
 			fi
 		fi
 	fi
-	if [ "${arch}" = "all" ]; then
-		grep -q "${app_name}:" build.md || log "${app_name}: ${version}"
-	else
-		grep -q "${app_name} (${arch}):" build.md || log "${app_name} (${arch}): ${version}"
-	fi
+	grep -q "${app_name}:" build.md || log "${app_name}: ${version}"
 	if [ "${args[merge_integrations]}" = true ]; then
 		p_patcher_args+=("-m ${RV_INTEGRATIONS_APK}")
 	fi
