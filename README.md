@@ -18,7 +18,7 @@ TOKEN : GitHub Token with workflow permission
 * Check releases after sometime.
 
 # ProVanced
-ProVanced is unofficial continuation of Revanced Extended(by [inotia00](https://github.com/inotia00/ReVanced_Extended)) with some tweaks wherever needed. ProVanced is more focused on simplicity instead of cluttering too many features, just the basic necessities to improve the youtube experience.
+ProVanced is unofficial fork/clone of Revanced Extended(by [inotia00](https://github.com/inotia00/ReVanced_Extended)) with some tweaks wherever needed. ProVanced is more focused on simplicity instead of cluttering too many features, just the basic necessities to improve the youtube experience.
 
 <details>
 <summary>Patches included in ProVanced</summary> 
@@ -39,10 +39,8 @@ ProVanced is unofficial continuation of Revanced Extended(by [inotia00](https://
   | `enable-open-links-directly` | Skips over redirection URLs to external links. | 
   | `enable-seekbar-tapping` | Enables tap-to-seek on the seekbar of the video player. | 
   | `force-premium-heading` | Forces premium heading on the home screen. | 
-  | `force-vp9-codec` | Forces the VP9 codec for videos. | 
   | `hide-auto-player-popup-panels` | Hide automatic popup panels (playlist or live chat) on video player. | 
   | `hide-autoplay-button` | Hides the autoplay button in the video player. | 
-  | `hide-breaking-news-shelf` | Hides the breaking news shelf on the homepage tab. | 
   | `hide-button-container` | Adds the options to hide action buttons under a video. | 
   | `hide-captions-button` | Hides the captions button in the video player. | 
   | `hide-cast-button` | Hides the cast button in the video player. | 
