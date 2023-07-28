@@ -56,7 +56,7 @@ get_prebuilts() {
 	RV_PATCHES_JAR="${PREBUILTS_DIR}/${rv_patches_url##*/}"
 	[ -f "$RV_PATCHES_JAR" ] || REBUILD=true
 	log "**Patches**: _${rv_patches_url##*/}_\n"
-        log "**Changelog**: [Here](https://github.com/inotia00/revanced-patches/releases/)\n"
+        log "**Changelog**:\n[Revanced](https://github.com/revanced/revanced-patches/releases/) | [Revanced-Extended](https://github.com/inotia00/revanced-patches/releases/)\n"
 
 	dl_if_dne "$RV_CLI_JAR" "$rv_cli_url"
 	dl_if_dne "$RV_INTEGRATIONS_APK" "$rv_integrations_url"
@@ -75,13 +75,13 @@ set_prebuilts() {
 	[ -d "$PREBUILTS_DIR" ] || abort "${PREBUILTS_DIR} directory could not be found"
 	RV_CLI_JAR=$(find "$PREBUILTS_DIR" -maxdepth 1 -name "revanced-cli-*.jar" | tail -n1)
 	[ "$RV_CLI_JAR" ] || abort "revanced cli not found"
-	log "CLI: ${RV_CLI_JAR#"$PREBUILTS_DIR/"}"
+	log "**CLI**: _${RV_CLI_JAR#"$PREBUILTS_DIR/"}_"
 	RV_INTEGRATIONS_APK=$(find "$PREBUILTS_DIR" -maxdepth 1 -name "revanced-integrations-*.apk" | tail -n1)
 	[ "$RV_INTEGRATIONS_APK" ] || abort "revanced integrations not found"
-	log "Integrations: ${RV_INTEGRATIONS_APK#"$PREBUILTS_DIR/"}"
+	log "**Integrations**: _${RV_INTEGRATIONS_APK#"$PREBUILTS_DIR/"}_"
 	RV_PATCHES_JAR=$(find "$PREBUILTS_DIR" -maxdepth 1 -name "revanced-patches-*.jar" | tail -n1)
 	[ "$RV_PATCHES_JAR" ] || abort "revanced patches not found"
-	log "Patches: ${RV_PATCHES_JAR#"$PREBUILTS_DIR/"}"
+	log "**Patches**: _${RV_PATCHES_JAR#"$PREBUILTS_DIR/"}_"
 	RV_PATCHES_JSON=$(find "$PREBUILTS_DIR" -maxdepth 1 -name "patches-*.json" | tail -n1)
 	[ "$RV_PATCHES_JSON" ] || abort "patches.json not found"
 	HTMLQ="${TEMP_DIR}/htmlq"
@@ -151,14 +151,14 @@ dl_apkmirror() {
 		if [ "$(sed -n 3p <<<"$app_table")" = "$apkorbundle" ] && { [ "$apkorbundle" = BUNDLE ] ||
 			{ [ "$apkorbundle" = APK ] && [ "$(sed -n 6p <<<"$app_table")" = "$dpi" ] &&
 				isoneof "$(sed -n 4p <<<"$app_table")" "${apparch[@]}"; }; }; then
-			dlurl=https://www.apkmirror.com$($HTMLQ --attribute href "div:nth-child(1) > a:nth-child(1)" <<<"$node")
+			dlurl=$($HTMLQ --base https://www.apkmirror.com --attribute href "div:nth-child(1) > a:nth-child(1)" <<<"$node")
 			break
 		fi
 	done
 	[ -z "$dlurl" ] && return 1
-	url="https://www.apkmirror.com$(req "$dlurl" - | sed -n 's;.*href="\(.*key=[^"]*\)">.*;\1;p' | tail -1)"
+	url=$(req "$dlurl" - | $HTMLQ --base https://www.apkmirror.com --attribute href "a.btn")
 	if [ "$apkorbundle" = BUNDLE ] && [[ "$url" != *"&forcebaseapk=true" ]]; then url="${url}&forcebaseapk=true"; fi
-	url="https://www.apkmirror.com$(req "$url" - | sed -n 's;.*href="\(.*key=[^"]*\)">.*;\1;p')"
+	url=$(req "$url" - | $HTMLQ --base https://www.apkmirror.com --attribute href "span > a[rel = nofollow]")
 	req "$url" "$output"
 }
 get_apkmirror_vers() {
@@ -197,7 +197,7 @@ patch_apk() {
 
 build_rv() {
 	local -n args=$1
-	local version build_mode_arr pkg_name uptwod_resp
+	local version build_mode_arr pkg_name
 	local mode_arg=${args[build_mode]} version_mode=${args[version]}
 	local app_name=${args[app_name]}
 	local app_name_l=${app_name,,}
@@ -271,9 +271,7 @@ build_rv() {
 		pr "Building '${app_name}' (${arch}) in '$build_mode' mode"
 		if [ "$microg_patch" ]; then
 			patched_apk="${TEMP_DIR}/${app_name_l}-${RV_BRAND_F}-${version_f}-${arch}-${build_mode}.apk"
-			if [ "$build_mode" = apk ]; then
-				patcher_args+=("-i ${microg_patch}")
-			fi
+			patcher_args+=("-i ${microg_patch}")
 		else
 			patched_apk="${TEMP_DIR}/${app_name_l}-${RV_BRAND_F}-${version_f}-${arch}.apk"
 		fi
