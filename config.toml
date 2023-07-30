@@ -1,8 +1,37 @@
 [YouTube]
-enabled = true
-build-mode = "apk"                   # 'apk'
-excluded-patches = "debugging"       # space-seperated patches to exclude (multiline strings are not supported)
-included-patches = ""                # space-seperated patches to include (non-excluded patches are included by default)
-version = "auto"                     # 'auto', 'latest', 'beta' or a custom one like '18.11.35'
-exclusive-patches = false            # excludes all patches by default
+build-mode = "apk"
+patches-source = "revanced/revanced-patches"
+integrations-source = "revanced/revanced-integrations"
+cli-source = "j-hc/revanced-cli"
+excluded-patches = ""
+included-patches = ""
+version = "auto"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"
+
+[YouTube-Extended]
+app-name = "YouTube"
+patches-source = "inotia00/revanced-patches"
+integrations-source = "inotia00/revanced-integrations"
+cli-source = "inotia00/revanced-cli"
+rv-brand = "ReVanced Extended"
+build-mode = "apk"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"
+
+[Music]
+build-mode = "apk"
+patches-source = "revanced/revanced-patches"
+integrations-source = "revanced/revanced-integrations"
+cli-source = "j-hc/revanced-cli"
+excluded-patches = ""
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube-music/"
+apkmirror-arch = "arm64-v8a"
+
+[Music-Extended]
+app-name = "Music"
+patches-source = "inotia00/revanced-patches"
+integrations-source = "inotia00/revanced-integrations"
+cli-source = "inotia00/revanced-cli"
+rv-brand = "ReVanced Extended"
+build-mode = "apk"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube-music/"
+apkmirror-arch = "arm64-v8a"
