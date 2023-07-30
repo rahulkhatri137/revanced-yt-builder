@@ -34,7 +34,7 @@ jobs:
           echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
 
       - name: Build APK
-        run: ./build.sh config.toml
+        run: git pull && ./build.sh config.toml
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
           GITHUB_REPOSITORY: $GITHUB_REPOSITORY
@@ -47,11 +47,12 @@ jobs:
           echo "BUILD_LOG<<${DELIM}" >> "$GITHUB_OUTPUT"
           cat build.md >> "$GITHUB_OUTPUT"
           echo "${DELIM}" >> "$GITHUB_OUTPUT"
-          yt_op=$(cat $GITHUB_OUTPUT | grep "YouTube:" | head -n 1 | cut -d " " -f 2)
-          if [ -z "$yt_op" ]; then
+          yt_v=$(cat $GITHUB_OUTPUT | grep "YouTube:" | head -n 1 | cut -d " " -f 2)
+          ytm_v=$(cat $GITHUB_OUTPUT | grep "Music:" | head -n 1 | cut -d " " -f 2)
+          if [ -z "$yt_v" ]; then
             echo "RELEASE_NAME=YouTube ReVanced" >> $GITHUB_OUTPUT
           else
-            echo "RELEASE_NAME= YouTube ReVanced v$yt_op" >> $GITHUB_OUTPUT
+            echo "RELEASE_NAME= YouTube:v$yt_v Music:v$ytm_v" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload to release
