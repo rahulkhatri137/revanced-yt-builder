@@ -10,8 +10,8 @@ apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"
 
 [YouTube-Extended]
 app-name = "YouTube"
-patches-source = "inotia00/revanced-patches"
-integrations-source = "inotia00/revanced-integrations"
+patches-source = "YT-Advanced/ReX-patches"
+integrations-source = "YT-Advanced/ReX-integrations"
 cli-source = "inotia00/revanced-cli"
 rv-brand = "ReVanced Extended"
 build-mode = "apk"
@@ -28,8 +28,8 @@ apkmirror-arch = "arm64-v8a"
 
 [Music-Extended]
 app-name = "Music"
-patches-source = "inotia00/revanced-patches"
-integrations-source = "inotia00/revanced-integrations"
+patches-source = "YT-Advanced/ReX-patches"
+integrations-source = "YT-Advanced/ReX-integrations"
 cli-source = "inotia00/revanced-cli"
 rv-brand = "ReVanced Extended"
 build-mode = "apk"
