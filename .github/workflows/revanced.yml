@@ -47,8 +47,8 @@ jobs:
           echo "BUILD_LOG<<${DELIM}" >> "$GITHUB_OUTPUT"
           cat build.md >> "$GITHUB_OUTPUT"
           echo "${DELIM}" >> "$GITHUB_OUTPUT"
-          yt_v=$(cat $GITHUB_OUTPUT | grep "YouTube:" | head -n 1 | cut -d " " -f 2)
-          ytm_v=$(cat $GITHUB_OUTPUT | grep "Music:" | head -n 1 | cut -d " " -f 2)
+          yt_v=$(cat $GITHUB_OUTPUT | grep "YouTube-Extended:" | head -n 1 | cut -d " " -f 2)
+          ytm_v=$(cat $GITHUB_OUTPUT | grep "Music-Extended:" | head -n 1 | cut -d " " -f 2)
           if [ -z "$yt_v" ]; then
             echo "RELEASE_NAME=YouTube ReVanced" >> $GITHUB_OUTPUT
           else
