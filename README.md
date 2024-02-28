@@ -26,27 +26,21 @@ ProVanced is unofficial fork/clone of Revanced Extended(by [inotia00](https://gi
   |  Patch |  Description | 
   |:--------:|:---------------------:| 
   | `change-homepage` | Change home page to subscription feed. | 
-  | `custom-double-tap-length` | Add 'double-tap to seek' value. | 
   | `custom-video-speed` | Adds more video speed options. | 
   | `default-video-quality` | Adds ability to set default video quality settings. | 
   | `default-video-speed` | Adds ability to set default video speed settings. | 
   | `disable-haptic-feedback` | Disable haptic feedback when swiping. | 
-  | `disable-hdr-video` | Disable HDR video. | 
-  | `disable-quic-protocol` | Disable CronetEngine's QUIC protocol. | 
   | `disable-startup-shorts-player` | Disables playing YouTube Shorts when launching YouTube. | 
   | `enable-minimized-playback` | Enables minimized and background playback. | 
   | `enable-old-quality-layout` | Enables the original quality flyout menu. | 
   | `enable-open-links-directly` | Skips over redirection URLs to external links. | 
   | `enable-seekbar-tapping` | Enables tap-to-seek on the seekbar of the video player. | 
   | `force-premium-heading` | Forces premium heading on the home screen. | 
-  | `hide-auto-player-popup-panels` | Hide automatic popup panels (playlist or live chat) on video player. | 
   | `hide-autoplay-button` | Hides the autoplay button in the video player. | 
   | `hide-button-container` | Adds the options to hide action buttons under a video. | 
   | `hide-captions-button` | Hides the captions button in the video player. | 
   | `hide-cast-button` | Hides the cast button in the video player. | 
   | `hide-channel-watermark` | Hides creator's watermarks on videos. | 
-  | `hide-crowdfunding-box` | Hides the crowdfunding box. | 
-  | `hide-fullscreen-panels` | Hides video description and comments panel in fullscreen view. | 
   | `hide-general-ads` | Removes general ads. | 
   | `hide-info-cards` | Hides info-cards in videos. | 
   | `hide-mix-playlists` | Removes mix playlists from home feed and video player. | 
@@ -54,12 +48,13 @@ ProVanced is unofficial fork/clone of Revanced Extended(by [inotia00](https://gi
   | `hide-video-ads` | Removes ads in the video player. | 
   | `microg-support` | Allows ProVanced to run without root with MicroG. | 
   | `optimize-resource` | Removes duplicate resources from YouTube. | 
-  | `protobuf-spoof` | Spoofs the protobuf to prevent playback issues. | 
   | `return-youtube-dislike` | Shows the dislikes using Return YouTube Dislike API. | 
   | `sponsorblock` | Integrates SponsorBlock which allows skipping video segments. | 
   | `swipe-controls` | Adds volume and brightness swipe controls. | 
-  | `theme` | Applies amoled theme. | 
   | `translations` | Add translations for YouTube. |
+  | `Spoof player parameters` | Adds options to spoof player parameters to prevent playback issues. |
+  | `Hide feed flyout panel` | Adds the ability to hide feed flyout panel components using a custom filter. | 
+  | `Sanitize sharing links` | Adds an option to remove tracking query parameters from URLs when sharing links. |
 </details>
 
 # [Releases](https://github.com/rahulkhatri137/revanced-yt-builder/releases)
@@ -71,3 +66,4 @@ ProVanced is unofficial fork/clone of Revanced Extended(by [inotia00](https://gi
 * Don't misuse GitHub actions. Run only when there is new update.
 * Star the repo if it helps you.
 * This only builds YouTube app you can add support for others.
+* 
