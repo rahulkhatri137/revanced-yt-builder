@@ -23,7 +23,7 @@ if [ ! -f "$HTMLQ" ]; then
 	rm "${TEMP_DIR}/htmlq.tar.gz"
 fi
 
-log "**Changelog**: [ReVanced-Extended](https://github.com/inotia00/revanced-patches/releases/) | [Revanced](https://github.com/revanced/revanced-patches/releases/)"
+log "**Changelog**: [ReVanced-Extended](https://github.com/inotia00/revanced-patches/releases/) | [Revanced](https://github.com/revanced/revanced-patches/releases/)  | [ReX](https://github.com/YT-Advanced/ReX-patches/releases)"
 log "**Note**: _MicroG must be installed!_"
 log "## **Only for *arm64-v8a* devices**\n"
 
