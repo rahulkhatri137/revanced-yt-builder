@@ -190,8 +190,7 @@ get_apkmirror_pkg_name() { req "$1" - | sed -n 's;.*id=\(.*\)" class="accent_col
 
 patch_apk() {
 	local stock_input=$1 patched_apk=$2 patcher_args=$3 rv_cli_jar=$4 rv_patches_jar=$5 rv_integ_apk=$6
-	declare -r tdir=$(mktemp -d -p $TEMP_DIR)
-	local cmd="java -jar $rv_cli_jar patch -b $rv_patches_jar -m $rv_integ_apk -o $patched_apk -r $tdir -p --rip-lib x86_64 --rip-lib x86 --keystore=revanced.keystore $patcher_args $stock_input"
+	local cmd="java -jar $rv_cli_jar patch -b $rv_patches_jar -m $rv_integ_apk -o $patched_apk -p --rip-lib x86_64 --rip-lib x86 --rip-lib armeabi-v7a --keystore=revanced.keystore $patcher_args $stock_input"
 	pr "$cmd"
 	if [ "${DRYRUN:-}" = true ]; then
 		cp -f "$stock_input" "$patched_apk"
@@ -229,10 +228,10 @@ build_rv() {
 		) || get_latest_ver=true
 	elif isoneof "$version_mode" latest beta; then
 		get_latest_ver=true
-		p_patcher_args+=("--experimental")
+		p_patcher_args+=("-f")
 	else
 		version=$version_mode
-		p_patcher_args+=("--experimental")
+		p_patcher_args+=("-f")
 	fi
 	if [ $get_latest_ver = true ]; then
 		local apkmvers
