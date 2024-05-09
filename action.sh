@@ -49,21 +49,21 @@ get_prebuilts() {
 	pr "Getting prebuilts (${patches_src%/*})" >&2
 	local rv_cli_url rv_integrations_url rv_patches rv_patches_dl rv_patches_url rv_patches_json
 
-	rv_cli_url=$(gh_req "https://api.github.com/repos/${cli_src}/releases/latest" - | json_get 'browser_download_url') || return 1
+	rv_cli_url=$(gh_req "https://api.github.com/repos/${cli_src}/releases/latest" - | json_get 'browser_download_url' | grep -E '\.jar$') || return 1
 	local rv_cli_jar="${cli_dir}/${rv_cli_url##*/}"
 	echo "\n**CLI**: $(cut -d/ -f4 <<<"$rv_cli_url")/$(cut -d/ -f9 <<<"$rv_cli_url")" >>"$patches_dir/changelog.md"
 
 	local rv_integrations_rel="https://api.github.com/repos/${integrations_src}/releases/latest"
 	local rv_patches_rel="https://api.github.com/repos/${patches_src}/releases/latest"
 	
-	rv_integrations_url=$(gh_req "$rv_integrations_rel" - | json_get 'browser_download_url')
+	rv_integrations_url=$(gh_req "$rv_integrations_rel" - | json_get 'browser_download_url' | grep -E '\.apk$')
 	local rv_integrations_apk="${integrations_dir}/${rv_integrations_url##*/}"
 	echo "**Integrations**: $(cut -d/ -f4 <<<"$rv_integrations_url")/$(cut -d/ -f9 <<<"$rv_integrations_url")" >>"$patches_dir/changelog.md"
 
 	rv_patches=$(gh_req "$rv_patches_rel" -)
 	rv_patches_dl=$(json_get 'browser_download_url' <<<"$rv_patches")
 	rv_patches_json="${patches_dir}/patches-$(json_get 'tag_name' <<<"$rv_patches").json"
-	rv_patches_url=$(grep 'jar' <<<"$rv_patches_dl")
+	rv_patches_url=$(grep -E '\.jar$' <<<"$rv_patches_dl")
 	local rv_patches_jar="${patches_dir}/${rv_patches_url##*/}"
 	[ -f "$rv_patches_jar" ] || REBUILD=true
 	echo "**Patches**: $(cut -d/ -f4 <<<"$rv_patches_url")/$(cut -d/ -f9 <<<"$rv_patches_url")" >>"$patches_dir/changelog.md"
