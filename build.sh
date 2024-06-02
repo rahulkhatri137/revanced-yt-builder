@@ -24,7 +24,7 @@ if [ ! -f "$HTMLQ" ]; then
 fi
 
 log "**Changelog**: [ReVanced-Extended](https://github.com/inotia00/revanced-patches/releases/) | [Revanced](https://github.com/revanced/revanced-patches/releases/)"
-log "**Note**: _MicroG must be installed!_"
+log "**Note**: _[Revanced GmsCore](https://github.com/Revanced/GmsCore/releases/latest) must be installed!_"
 log "## **Only for *arm64-v8a* devices**\n"
 
 set_prebuilts() {
@@ -95,5 +95,6 @@ wait
 rm -rf temp/tmp.*
 if [ -z "$(ls -A1 ${BUILD_DIR})" ]; then abort "All builds failed."; fi
 log "$(cat $TEMP_DIR/*-rv/changelog.md)"
-
+log "ReVanced by @ReVanced"
+log "ReVanced-Extended by @inotia00"
 pr "Done"
