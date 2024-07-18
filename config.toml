@@ -5,7 +5,7 @@ integrations-source = "revanced/revanced-integrations"
 cli-source = "inotia00/revanced-cli"
 excluded-patches = ""
 included-patches = ""
-version = "19.26.42"
+version = "auto"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"
 
 [YouTube-Extended]
@@ -15,6 +15,7 @@ integrations-source = "inotia00/revanced-integrations"
 cli-source = "inotia00/revanced-cli"
 rv-brand = "ReVanced Extended"
 build-mode = "apk"
+version = "19.26.42"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"
 
 [Music]
