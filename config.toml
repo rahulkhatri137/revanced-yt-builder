@@ -5,7 +5,7 @@ integrations-source = "revanced/revanced-integrations"
 cli-source = "inotia00/revanced-cli"
 excluded-patches = ""
 included-patches = ""
-version = "auto"
+version = "19.26.42"
 apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube/"
 
 [YouTube-Extended]
