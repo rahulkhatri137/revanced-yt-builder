@@ -37,43 +37,32 @@ abort() {
 }
 
 get_prebuilts() {
-	local integrations_src=$1 patches_src=$2 cli_src=$3
+	local patches_src=$1 cli_src=$2
 	local patches_dir=${patches_src%/*}
 	patches_dir=${TEMP_DIR}/${patches_dir//[^[:alnum:]]/}-rv
-	local integrations_dir=${integrations_src%/*}
-	integrations_dir=${TEMP_DIR}/${integrations_dir//[^[:alnum:]]/}-rv
 	local cli_dir=${cli_src%/*}
 	cli_dir=${TEMP_DIR}/${cli_dir//[^[:alnum:]]/}-rv
-	mkdir -p "$patches_dir" "$integrations_dir" "$cli_dir"
+	mkdir -p "$patches_dir" "$cli_dir"
 
 	pr "Getting prebuilts (${patches_src%/*})" >&2
-	local rv_cli_url rv_integrations_url rv_patches rv_patches_dl rv_patches_url rv_patches_json
+	local rv_cli_url rv_patches rv_patches_dl rv_patches_url
 
 	rv_cli_url=$(gh_req "https://api.github.com/repos/${cli_src}/releases/latest" - | json_get 'browser_download_url' | grep -E '\.jar$') || return 1
 	local rv_cli_jar="${cli_dir}/${rv_cli_url##*/}"
 	echo "\n**CLI**: $(cut -d/ -f4 <<<"$rv_cli_url")/$(cut -d/ -f9 <<<"$rv_cli_url")" >>"$patches_dir/changelog.md"
 
-	local rv_integrations_rel="https://api.github.com/repos/${integrations_src}/releases/latest"
 	local rv_patches_rel="https://api.github.com/repos/${patches_src}/releases/latest"
-	
-	rv_integrations_url=$(gh_req "$rv_integrations_rel" - | json_get 'browser_download_url' | grep -E '\.apk$')
-	local rv_integrations_apk="${integrations_dir}/${rv_integrations_url##*/}"
-	echo "**Integrations**: $(cut -d/ -f4 <<<"$rv_integrations_url")/$(cut -d/ -f9 <<<"$rv_integrations_url")" >>"$patches_dir/changelog.md"
-
 	rv_patches=$(gh_req "$rv_patches_rel" -)
 	rv_patches_dl=$(json_get 'browser_download_url' <<<"$rv_patches")
-	rv_patches_json="${patches_dir}/patches-$(json_get 'tag_name' <<<"$rv_patches").json"
-	rv_patches_url=$(grep -E '\.jar$' <<<"$rv_patches_dl")
+	rv_patches_url=$(grep -E '\.rvp$' <<<"$rv_patches_dl")
 	local rv_patches_jar="${patches_dir}/${rv_patches_url##*/}"
 	[ -f "$rv_patches_jar" ] || REBUILD=true
 	echo "**Patches**: $(cut -d/ -f4 <<<"$rv_patches_url")/$(cut -d/ -f9 <<<"$rv_patches_url")" >>"$patches_dir/changelog.md"
 
 	dl_if_dne "$rv_cli_jar" "$rv_cli_url" >&2
-	dl_if_dne "$rv_integrations_apk" "$rv_integrations_url" >&2
 	dl_if_dne "$rv_patches_jar" "$rv_patches_url" >&2
-	dl_if_dne "$rv_patches_json" "$(grep 'json' <<<"$rv_patches_dl")" >&2
 
-	echo "$rv_cli_jar" "$rv_integrations_apk" "$rv_patches_jar" "$rv_patches_json"
+	echo "$rv_cli_jar" "$rv_patches_jar"
 }
 
 _req() {
@@ -94,7 +83,7 @@ req() { _req "$1" "$2" "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:108.0) Ge
 gh_req() { _req "$1" "$2" "$GH_HEADER"; }
 
 log() { echo -e "$1  " >>"build.md"; }
-get_largest_ver() {
+get_highest_ver() {
 	local vers m
 	vers=$(tee)
 	m=$(head -1 <<<"$vers")
@@ -106,19 +95,33 @@ semver_validate() {
 	[ ${#ac} = 0 ]
 }
 get_patch_last_supported_ver() {
-	local inc_sel exc_sel vs
-	inc_sel=$(list_args "$2" | sed 's/.*/\.name == &/' | paste -sd '~' | sed 's/~/ or /g' || :)
-	exc_sel=$(list_args "$3" | sed 's/.*/\.name != &/' | paste -sd '~' | sed 's/~/ and /g' || :)
-	inc_sel=${inc_sel:-false}
-	if [ "$4" = false ]; then inc_sel="${inc_sel} or .use==true"; fi
-	if ! vs=$(jq -r ".[]
-			| select(.compatiblePackages // [] | .[] | .name==\"${1}\")
-			| select(${inc_sel})
-			| select(${exc_sel:-true})
-			| .compatiblePackages[].versions // []" "$5"); then
-		abort "error in jq query"
+	local list_patches=$1 pkg_name=$2 inc_sel=$3 _exc_sel=$4 _exclusive=$5 # TODO: resolve using all of these
+	local op
+	if [ "$inc_sel" ]; then
+		if ! op=$(awk '{$1=$1}1' <<<"$list_patches"); then
+			epr "list-patches: '$op'"
+			return 1
+		fi
+		local ver vers="" NL=$'\n'
+		while IFS= read -r line; do
+			line="${line:1:${#line}-2}"
+			ver=$(sed -n "/^Name: $line\$/,/^\$/p" <<<"$op" | sed -n "/^Compatible versions:\$/,/^\$/p" | tail -n +2)
+			vers=${ver}${NL}
+		done <<<"$(list_args "$inc_sel")"
+		vers=$(awk '{$1=$1}1' <<<"$vers")
+		if [ "$vers" ]; then
+			get_highest_ver <<<"$vers"
+			return
+		fi
 	fi
-	tr -d ' ,\t[]"' <<<"$vs" | sort -u | grep -v '^$' | get_largest_ver || :
+	if ! op=$(java -jar "$rv_cli_jar" list-versions "$rv_patches_jar" -f "$pkg_name" 2>&1 | tail -n +3 | awk '{$1=$1}1'); then
+		epr "list-versions: '$op'"
+		return 1
+	fi
+	if [ "$op" = "Any" ]; then return; fi
+	pcount=$(head -1 <<<"$op") pcount=${pcount#*(} pcount=${pcount% *}
+	if [ -z "$pcount" ]; then abort "unreachable: '$pcount'"; fi
+	grep -F "($pcount patch" <<<"$op" | sed 's/ (.* patch.*//' | get_highest_ver || return 1
 }
 
 dl_if_dne() {
@@ -189,8 +192,8 @@ get_apkmirror_pkg_name() { req "$1" - | sed -n 's;.*id=\(.*\)" class="accent_col
 # --------------------------------------------------
 
 patch_apk() {
-	local stock_input=$1 patched_apk=$2 patcher_args=$3 rv_cli_jar=$4 rv_patches_jar=$5 rv_integ_apk=$6
-	local cmd="java -jar $rv_cli_jar patch -b $rv_patches_jar -m $rv_integ_apk -o $patched_apk -p --rip-lib x86_64 --rip-lib x86 --rip-lib armeabi-v7a --keystore=revanced.keystore $patcher_args $stock_input"
+	local stock_input=$1 patched_apk=$2 patcher_args=$3 rv_cli_jar=$4 rv_patches_jar=$5 
+	local cmd="java -jar $rv_cli_jar patch -p $rv_patches_jar -o $patched_apk --rip-lib x86_64 --rip-lib x86 --rip-lib armeabi-v7a --keystore=revanced.keystore $patcher_args $stock_input"
 	pr "$cmd"
 	if [ "${DRYRUN:-}" = true ]; then
 		cp -f "$stock_input" "$patched_apk"
@@ -213,19 +216,22 @@ build_rv() {
 	if [ "$arch" = 'universal' ]; then local arch_f="all"; else local arch_f="$arch"; fi
 
 	local p_patcher_args=()
-	p_patcher_args+=("$(join_args "${args[excluded_patches]}" -e) $(join_args "${args[included_patches]}" -i)")
+	p_patcher_args+=("$(join_args "${args[excluded_patches]}" -d) $(join_args "${args[included_patches]}" -e)")
 	[ "${args[exclusive_patches]}" = true ] && p_patcher_args+=("--exclusive")
 
 	if [ "$dl_from" = apkmirror ]; then
 		pkg_name=$(get_apkmirror_pkg_name "${args[apkmirror_dlurl]}")
 	fi
 
+	local list_patches
+	list_patches=$(java -jar "$rv_cli_jar" list-patches "$rv_patches_jar" -f "$pkg_name" -v -p 2>&1)
+
 	local get_latest_ver=false
 	if [ "$version_mode" = auto ]; then
-		version=$(
-			get_patch_last_supported_ver "$pkg_name" \
-				"${args[included_patches]}" "${args[excluded_patches]}" "${args[exclusive_patches]}" "${args[ptjs]}"
-		) || get_latest_ver=true
+		if ! version=$(get_patch_last_supported_ver "$list_patches" "$pkg_name" \
+			"${args[included_patches]}" "${args[excluded_patches]}" "${args[exclusive_patches]}"); then
+			exit 1
+		elif [ -z "$version" ]; then get_latest_ver=true; fi
 	elif isoneof "$version_mode" latest beta; then
 		get_latest_ver=true
 		p_patcher_args+=("-f")
@@ -237,7 +243,7 @@ build_rv() {
 		local apkmvers
 		if [ "$dl_from" = apkmirror ]; then
 		apkmvers=$(get_apkmirror_vers "${args[apkmirror_dlurl]##*/}" "false")
-		version=$(get_largest_ver <<<"$apkmvers") || version=$(head -1 <<<"$apkmvers")
+		version=$(get_highest_ver <<<"$apkmvers") || version=$(head -1 <<<"$apkmvers")
 		fi
 	fi
 	if [ -z "$version" ]; then
@@ -267,12 +273,6 @@ build_rv() {
 	fi
 	log "${table}: ${version}"
 
-	local microg_patch
-	microg_patch=$(jq -r ".[] | select(.compatiblePackages // [] | .[] | .name==\"${pkg_name}\") | .name" "${args[ptjs]}" | grep -iF microg || :)
-	if [ "$microg_patch" ]; then
-		p_patcher_args=("${p_patcher_args[@]//-[ei] ${microg_patch}/}")
-	fi
-
 	local stock_bundle_apk="${TEMP_DIR}/${pkg_name}-${version_f}-${arch_f}-bundle.apk"
 	local is_bundle=false
 	build_mode_arr=(apk)
@@ -282,14 +282,9 @@ build_rv() {
 	for build_mode in "${build_mode_arr[@]}"; do
 		patcher_args=("${p_patcher_args[@]}")
 		pr "Building '${table}' in '$build_mode' mode"
-		if [ "$microg_patch" ]; then
-			patched_apk="${TEMP_DIR}/${app_name_l}-${rv_brand_f}-${version_f}-${arch_f}-${build_mode}.apk"
-			patcher_args+=("-i \"${microg_patch}\"")
-		else
-			patched_apk="${TEMP_DIR}/${app_name_l}-${rv_brand_f}-${version_f}-${arch_f}.apk"
-		fi
+		patched_apk="${TEMP_DIR}/${app_name_l}-${rv_brand_f}-${version_f}-${arch_f}.apk"
 		if [ ! -f "$patched_apk" ] || [ "$REBUILD" = true ]; then
-			if ! patch_apk "$stock_apk" "$patched_apk" "${patcher_args[*]}" "${args[cli]}" "${args[ptjar]}" "${args[integ]}"; then
+			if ! patch_apk "$stock_apk" "$patched_apk" "${patcher_args[*]}" "${args[cli]}" "${args[ptjar]}"; then
 				epr "Building '${table}' failed!"
 				return 0
 			fi
