@@ -28,15 +28,12 @@ log "**Note**: _[Revanced GmsCore](https://github.com/Revanced/GmsCore/releases/
 log "## **Only for *arm64-v8a* devices**\n"
 
 set_prebuilts() {
-	local integrations_src=$1 patches_src=$2 cli_src=$3
+	local patches_src=$1 cli_src=$2
 	local patches_dir=${patches_src%/*}
-	local integrations_dir=${integrations_src%/*}
 	local cli_dir=${cli_src%/*}
 
 	app_args[cli]=$(find "${TEMP_DIR}/${cli_dir//[^[:alnum:]]/}-rv" -name "revanced-cli-*.jar" -type f -print -quit 2>/dev/null) && [ "${app_args[cli]}" ] || return 1
-	app_args[integ]=$(find "${TEMP_DIR}/${integrations_dir//[^[:alnum:]]/}-rv" -name "revanced-integrations-*.apk" -type f -print -quit 2>/dev/null) && [ "${app_args[integ]}" ] || return 1
-	app_args[ptjar]=$(find "${TEMP_DIR}/${patches_dir//[^[:alnum:]]/}-rv" -name "revanced-patches-*.jar" -type f -print -quit 2>/dev/null) && [ "${app_args[ptjar]}" ] || return 1
-	app_args[ptjs]=$(find "${TEMP_DIR}/${patches_dir//[^[:alnum:]]/}-rv" -name "patches-*.json" -type f -print -quit 2>/dev/null) && [ "${app_args[ptjs]}" ] || return 1
+	app_args[ptjar]=$(find "${TEMP_DIR}/${patches_dir//[^[:alnum:]]/}-rv" -name "patches-*.rvp" -type f -print -quit 2>/dev/null) && [ "${app_args[ptjar]}" ] || return 1
 }
 
 build_rvx() {
@@ -51,15 +48,12 @@ for table_name in $(toml_get_table_names); do
 
 	declare -A app_args
 	patches_src=$(toml_get "$t" patches-source) || patches_src=""
-	integrations_src=$(toml_get "$t" integrations-source) || integrations_src=""
 	cli_src=$(toml_get "$t" cli-source) || cli_src=""
-	if ! set_prebuilts "$integrations_src" "$patches_src" "$cli_src"; then
-		read -r rv_cli_jar rv_integrations_apk rv_patches_jar rv_patches_json \
-			<<<"$(get_prebuilts "$integrations_src" "$patches_src" "$cli_src")"
+	if ! set_prebuilts "$patches_src" "$cli_src"; then
+		read -r rv_cli_jar rv_patches_jar \
+			<<<"$(get_prebuilts "$patches_src" "$cli_src")"
 		app_args[cli]=$rv_cli_jar
-		app_args[integ]=$rv_integrations_apk
 		app_args[ptjar]=$rv_patches_jar
-		app_args[ptjs]=$rv_patches_json
 	fi
 	app_args[rv_brand]=$(toml_get "$t" rv-brand) || app_args[rv_brand]="ReVanced"
 
@@ -84,7 +78,6 @@ for table_name in $(toml_get_table_names); do
 			abort "ERROR: arch '${app_args[arch]}' is not a valid option for '${table_name}': only 'universal', 'arm64-v8a', 'arm-v7a' is allowed"
 		fi
 	} || app_args[arch]="universal"
-	app_args[merge_integrations]=$(toml_get "$t" merge-integrations) || app_args[merge_integrations]=true && vtf "${app_args[merge_integrations]}" "merge-integrations"
 	app_args[dpi]=$(toml_get "$t" apkmirror-dpi) || app_args[dpi]="nodpi"
 	table_name_f=${table_name,,}
 	table_name_f=${table_name_f// /-}
